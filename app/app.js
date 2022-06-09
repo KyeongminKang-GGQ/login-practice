@@ -5,7 +5,6 @@ const express = require("express");
 const app = express();
 
 
-
 // 라우팅
 const home = require("./src/routes/home");
 
@@ -24,6 +23,9 @@ app.set("view engine", "ejs");
 // app.get("/login", (req, res) => {
 //     res.render("home/login");
 // });
+
+// 정적 경로 추가
+app.use(express.static(`${__dirname}/src/public`));
 
 // 미들웨어 등록
 app.use("/", home);
