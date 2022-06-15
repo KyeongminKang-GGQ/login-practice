@@ -11,10 +11,10 @@ class User {
         const client = this.body;
         console.log(`login request : ${JSON.stringify(client)}`);
         try {
-            const { email, password } = await UserStorage.getUserInfo(client.email);
+            const { id, email, password } = await UserStorage.getUserInfoByEmail(client.email);
             console.log(`find user : ${email}, ${password}`);
 
-            const { accessToken, refreshToken } = await UserStorage.issueToken(email);
+            const { accessToken, refreshToken } = await UserStorage.issueToken(id);
 
             if (email) {
                 if (email === client.email && password === client.password) {

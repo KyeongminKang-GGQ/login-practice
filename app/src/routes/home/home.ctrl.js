@@ -3,6 +3,7 @@
 const User = require(`../../models/User`);
 const UserStorage = require(`../../models/UserStorage`);
 const jwt = require("jsonwebtoken");
+const request = require("async-request");
 
 const output = {
     home: (req, res) => {
@@ -34,20 +35,6 @@ const process = {
         const response = await user.register();
 
         return res.json(response);
-    },
-    kakaoLogin: async (req, res) => {
-        const query = req.query;
-
-        console.log(`query: ${JSON.stringify(query)}`);
-
-        if (!Object.prototype.hasOwnProperty.call(query, "code")) {
-            return res.status(400).send("invalid_code");
-        }
-
-        const authorizationCode = query.code;
-        console.log(`authorizationCode: ${authorizationCode}`);
-
-        // Access Token 요청
     },
     userList: async (req, res) => {
         let token = '';
