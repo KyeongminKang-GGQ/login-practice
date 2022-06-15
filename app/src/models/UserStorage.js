@@ -3,56 +3,95 @@
 const fs = require("fs").promises;
 const path = require("path");
 const jsonPath = path.join(__dirname, "../databases/users.json");
+const jwt = require(`jsonwebtoken`);
+const db = require("../config/db");
+
+// TODO env로 변경
+const SECRET_KEY = "test_secret_key";
 
 class UserStorage {
-    static #getUserInfo(data, email) {
-        const users = JSON.parse(data);
-        const idx = users.email.indexOf(email);
-        const userInfo = Object.keys(users).reduce((newUser, info) => {
-            newUser[info] = users[info][idx];
-            return newUser;
-        }, {});
-        return userInfo;
-    }
-
-    static #getUsers(data, isAll, fields) {
-        const users = JSON.parse(data);
-        if (isAll) return users;
-        const newUsers = fields.reduce((newUsers, field) => {
-            if (users.hasOwnProperty(field)) {
-                newUsers[field] = users[field];
-            }
-            return newUsers;
-        }, {});
-        return newUsers;
-    }
-
-    static getUsers(isAll, ...fields) {
-        return fs.readFile(jsonPath)
-            .then((data) => {
-               return this.#getUsers(data, isAll, fields);
-            })
-            .catch(console.error);
+    static getUsers() {
+        return new Promise((resolve, reject) => {
+            const query =  "SELECT * FROM users";
+            db.query(
+                query,
+                (err, data) => {
+                    if (err) reject(err);
+                    else {
+                        console.log(data);
+                        resolve(data);
+                    }
+                }
+            );
+        });
     }
 
     static getUserInfo(email) {
-        return fs.readFile(jsonPath)
-            .then((data) => {
-               return this.#getUserInfo(data, email);
-            })
-            .catch(console.error);
+        return new Promise((resolve, reject) => {
+            const query =  "SELECT * FROM users WHERE email = ?";
+            db.query(
+                query,
+                [email],
+                (err, data) => {
+                    if (err) reject(`${err}`);
+                    else resolve(data[0]);
+                }
+            );
+        });
     }
 
     static async save(userInfo) {
-        const users = await this.getUsers(true);
-        console.log(`save ${JSON.stringify(users)}`);
-        if (users.email.includes(userInfo.email)) throw "이미 존재하는 아이디입니다";
-        users.email.push(userInfo.email);
-        users.name.push(userInfo.name);
-        users.password.push(userInfo.password);
-        
-        fs.writeFile(jsonPath, JSON.stringify(users));      
-        return { success: true };
+        const users = await this.getUserInfo(userInfo.email);
+        if (users != undefined)  throw "이미 존재하는 아이디입니다"
+
+        return new Promise((resolve, reject) => {
+            const query =  "INSERT INTO users(email, name, password) VALUES(?, ?, ?)";
+            db.query(
+                query,
+                [userInfo.email, userInfo.name, userInfo.password],
+                (err) => {
+                    if (err) reject(`${err}`);
+                    else {
+                        this.getUsers();
+                        resolve({ success: true });
+                    }
+                }
+            );
+        });
+    }
+
+    static async issueToken(email) {
+        const user = await this.getUserInfo(email);
+
+        const payload = {
+            email: user.email,
+            name: user.name
+        }
+
+        const accessToken = jwt.sign(
+            payload,
+            SECRET_KEY,
+            {
+                expiresIn: "15m",
+                audience: user.name,
+                subject: user.name,
+                issuer: "GGQ"
+            }
+        );
+
+        const refreshToken = jwt.sign(
+            {},
+            SECRET_KEY,
+            {
+                expiresIn: '14d'
+            }
+        )
+
+        console.log(`accessToken: ${email}, ${accessToken}`);
+        console.log(`refreshToken: ${email}, ${refreshToken}`);
+
+        user.refreshToken.push(refreshToken);
+        return { accessToken: accessToken, refreshToken: refreshToken };
     }
 }
 
