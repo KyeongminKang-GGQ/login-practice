@@ -3,7 +3,7 @@
 const express = require("express");
 const router = express.Router();
 
-const ctrl = require("./home.ctrl");
+const ctrl = require(`${__dirname}/home.ctrl`);
 
 router.get("/", ctrl.output.home);
 router.get("/login", ctrl.output.login);

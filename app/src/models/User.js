@@ -1,6 +1,6 @@
 "use strict";
 
-const UserStorage = require("./UserStorage");
+const UserStorage = require(`./UserStorage`);
 
 class User {
     constructor(body) {
@@ -8,11 +8,13 @@ class User {
     }
 
     async login() {
-        const body = this.body;
-        const { id, password } = await UserStorage.getUserInfo(body.id);
+        const client = this.body;
+        console.log(`login request : ${JSON.stringify(client)}`);
+        const { email, password } = await UserStorage.getUserInfo(client.email);
+        console.log(`find user : ${email}, ${password}`);
 
-        if (id) {
-            if (id === body.id && password === body.password) {
+        if (email) {
+            if (email === client.email && password === client.password) {
                 return { success: true };
             }
             return { success: false, msg: "비밀번호가 틀렸습니다"};
@@ -22,12 +24,11 @@ class User {
 
     async register() {
         const client = this.body;
+        console.log(`register request : ${JSON.stringify(client)}`);
         try {
             const response = await UserStorage.save(client);
             return response;
         } catch (err) {
-            const a = { success: false, msg: err };
-            console.log(a);
             return { success: false, msg: err };
         }
     }

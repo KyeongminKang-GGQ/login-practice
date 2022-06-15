@@ -1,3 +1,5 @@
+<!-- Copyright (c) 2022 by Aigars Silkalns (https://codepen.io/colorlib/pen/rxddKy) -->
+
 <!DOCTYPE html>
 <html lang="ko">
 <head>
@@ -5,12 +7,22 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="stylesheet" href="/css/home/login.css">
+
     <script src="/js/home/login.js" defer></script>
     <title>Document</title>
 </head>
 <body>
-    <input id="id" type="text" placeholder="ID"><br>
-    <input id="password" type="text" placeholder="PW"><br>
-    <button>Login</button>
+    <div class="login-page">
+        <div class="form">
+          <form class="login-form">
+            <input id="email" type="text" placeholder="email"/>
+            <input id="password" type="password" placeholder="password"/>
+            <button>login</button>
+            <p class="message">Not registered? <a href="/register">Create an account</a></p>
+          </form>
+        </div>
+      </div>
 </body>
 </html>
+

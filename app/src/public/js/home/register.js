@@ -1,21 +1,25 @@
 "use strict";
 
-const id = document.querySelector("#id"),
+const email = document.querySelector("#email"),
     userName = document.querySelector("#name"),
     password = document.querySelector("#password"),
     confirmPassword = document.querySelector("#confirm-password"),
     signUpBtn = document.querySelector("button");
 
-signUpBtn.addEventListener("click", signUp);
+signUpBtn.addEventListener("click", register);
 
-function signUp() {
-    if (!id.value) return alert("아이디를 입력해주십시오.")
+function register() {
+    if (!email.value) return alert("아이디를 입력해주십시오.")
 
     if (password.value != confirmPassword.value) 
         return alert("비밀번호가 일치하지 않습니다");
 
+    if (!password.value) return alert("비밀번호를 입력해주십시오.")
+
+    if (!userName.value) return alert("이름을 입력해주십시오.")
+
     const req = {
-        id: id.value,
+        email: email.value,
         name: userName.value,
         password: password.value,
     };
@@ -28,10 +32,12 @@ function signUp() {
         body: JSON.stringify(req)
     })
     .then((res) => res.json())
-    .then((res) => {
+    .then((res) => {       
         if (res.success) {
+            console.log(`auth/v1/register success`);
             location.href = "/login";
         } else {
+            console.log(`auth/v1/register fail`);
             alert(res.msg);
         }
     })

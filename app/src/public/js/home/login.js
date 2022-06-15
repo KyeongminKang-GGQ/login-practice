@@ -1,6 +1,6 @@
 "use strict";
 
-const id = document.querySelector("#id"),
+const email = document.querySelector("#email"),
     password = document.querySelector("#password"),
     loginBtn = document.querySelector("button");
 
@@ -8,7 +8,7 @@ loginBtn.addEventListener("click", login);
 
 function login() {
     const req = {
-        id: id.value,
+        email: email.value,
         password: password.value
     };
 
@@ -22,8 +22,10 @@ function login() {
     .then((res) => res.json())
     .then((res) => {
         if (res.success) {
+            console.log(`auth/v1/login success`);
             location.href = "/";
         } else {
+            console.log(`auth/v1/login fail`);
             alert(res.msg);
         }
     })

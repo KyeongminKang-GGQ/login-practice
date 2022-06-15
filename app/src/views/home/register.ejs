@@ -5,14 +5,23 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+    <link rel="stylesheet" href="/css/home/login.css">
+
     <script src="/js/home/register.js" defer></script>
     <title>Document</title>
 </head>
 <body>
-    <input id="id" type="text" placeholder="ID"><br>
-    <input id="name" type="text" placeholder="Name"><br>
-    <input id="password" type="text" placeholder="PW"><br>
-    <input id="confirm-password" type="text" placeholder="Confirm PW"><br>
-    <button>SIGN UP</button>
+    <div class="login-page">
+        <div class="form">
+          <form class="register-form">
+            <input id="email" type="text" placeholder="email address"/>
+            <input id="name" type="text" placeholder="name"/>
+            <input id="password" type="password" placeholder="password"/>
+            <input id="confirm-password" type="password" placeholder="confirm password"/>
+            <button>create</button>
+            <p class="message">Already registered? <a href="/login">Sign In</a></p>
+          </form>
+        </div>
+      </div>
 </body>
-</html>
+</html> 
