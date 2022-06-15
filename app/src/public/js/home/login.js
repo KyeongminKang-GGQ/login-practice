@@ -23,7 +23,9 @@ function login() {
         .then((res) => {
             if (res.success) {
                 console.log(`auth/v1/login success ${JSON.stringify(res)}`);
-                location.href = "/";
+                localStorage.setItem("accessToken", res.accessToken);
+                localStorage.setItem("refreshToken", res.refreshToken);
+                location.href = "/main";
             } else {
                 console.log(`auth/v1/login fail`);
                 alert(res.msg);

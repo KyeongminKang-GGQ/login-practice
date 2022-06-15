@@ -6,13 +6,26 @@ const jsonPath = path.join(__dirname, "../databases/users.json");
 const jwt = require(`jsonwebtoken`);
 const db = require("../config/db");
 
-// TODO env로 변경
-const SECRET_KEY = "test_secret_key";
-
 class UserStorage {
-    static getUsers() {
+    static #getUserEmail() {
         return new Promise((resolve, reject) => {
-            const query =  "SELECT * FROM users";
+            const query = "SELECT email FROM users";
+            db.query(
+                query,
+                (err, data) => {
+                    if (err) reject(err);
+                    else {
+                        console.log(data);
+                        resolve(data);
+                    }
+                }
+            );
+        });
+    }
+
+    static #getUsers() {
+        return new Promise((resolve, reject) => {
+            const query = "SELECT * FROM users";
             db.query(
                 query,
                 (err, data) => {
@@ -28,7 +41,7 @@ class UserStorage {
 
     static getUserInfo(email) {
         return new Promise((resolve, reject) => {
-            const query =  "SELECT * FROM users WHERE email = ?";
+            const query = "SELECT * FROM users WHERE email = ?";
             db.query(
                 query,
                 [email],
@@ -42,17 +55,17 @@ class UserStorage {
 
     static async save(userInfo) {
         const users = await this.getUserInfo(userInfo.email);
-        if (users != undefined)  throw "이미 존재하는 아이디입니다"
+        if (users != undefined) throw "이미 존재하는 아이디입니다"
 
         return new Promise((resolve, reject) => {
-            const query =  "INSERT INTO users(email, name, password) VALUES(?, ?, ?)";
+            const query = "INSERT INTO users(email, name, password) VALUES(?, ?, ?)";
             db.query(
                 query,
                 [userInfo.email, userInfo.name, userInfo.password],
                 (err) => {
                     if (err) reject(`${err}`);
                     else {
-                        this.getUsers();
+                        this.#getUsers();
                         resolve({ success: true });
                     }
                 }
@@ -60,8 +73,45 @@ class UserStorage {
         });
     }
 
+    static async saveRefreshToken(email, refreshToken) {
+        const users = await this.getUserInfo(email);
+        if (users == undefined) throw "존재하지 않는 유저입니다"
+
+        return new Promise((resolve, reject) => {
+            const query = "UPDATE users SET refreshToken = ? WHERE email = ?";
+            db.query(
+                query,
+                [refreshToken, email],
+                (err) => {
+                    if (err) reject(`${err}`);
+                    else {
+                        this.#getUsers();
+                        resolve({ success: true });
+                    }
+                }
+            );
+        });
+    }
+
+    static async getUsers(accessToken) {
+        console.log(`getUsers: ${accessToken}`);
+        try {
+            const payload = jwt.verify(accessToken, process.env.SECRET_KEY);
+            console.log('토큰 인증 성공', payload);
+            const response = await this.#getUserEmail();
+            return { success: true, response: response };
+        } catch (err) {
+            console.log('토큰 인증 에러', err);
+            return { success: false, msg: err };
+        }
+    }
+
     static async issueToken(email) {
+        console.log(`issueToken ${email}`);
+
         const user = await this.getUserInfo(email);
+
+        console.log(user);
 
         const payload = {
             email: user.email,
@@ -70,7 +120,7 @@ class UserStorage {
 
         const accessToken = jwt.sign(
             payload,
-            SECRET_KEY,
+            process.env.SECRET_KEY,
             {
                 expiresIn: "15m",
                 audience: user.name,
@@ -81,7 +131,7 @@ class UserStorage {
 
         const refreshToken = jwt.sign(
             {},
-            SECRET_KEY,
+            process.env.SECRET_KEY,
             {
                 expiresIn: '14d'
             }
@@ -90,7 +140,8 @@ class UserStorage {
         console.log(`accessToken: ${email}, ${accessToken}`);
         console.log(`refreshToken: ${email}, ${refreshToken}`);
 
-        user.refreshToken.push(refreshToken);
+        await this.saveRefreshToken(email, refreshToken);
+
         return { accessToken: accessToken, refreshToken: refreshToken };
     }
 }
