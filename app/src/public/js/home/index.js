@@ -7,9 +7,11 @@ const logoutButton = document.querySelector("#logout"),
 const id = localStorage.getItem("id");
 const accessToken = localStorage.getItem("accessToken");
 const refreshToken = localStorage.getItem("refreshToken");
+const oauth_accessToken = localStorage.getItem("oauth_accessToken");
+const oauth_refreshToken = localStorage.getItem("oauth_refreshToken");
 
 const newDIV = document.createElement("div");
-newDIV.innerHTML = `id: ${id}, <p>accessToken : ${accessToken}<p>refreshToken: ${refreshToken}`;
+newDIV.innerHTML = `id: ${id}, <p>accessToken : ${accessToken}<p>refreshToken: ${refreshToken}<p>oauth_accessToken: ${oauth_accessToken}<p>oauth_refreshToken : ${oauth_refreshToken}`;
 document.getElementById("container").appendChild(newDIV);
 
 logoutButton.addEventListener("click", logout);
@@ -24,7 +26,8 @@ function deleteUsers() {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-        }
+        },
+        body: JSON.stringify(req),
     })
         .then((res) => res.json())
         .then((res) => {

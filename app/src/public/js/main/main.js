@@ -1,14 +1,56 @@
 "use strict";
 
-const button = document.querySelector("button");
+const listButton = document.querySelector("#list"),
+  refreshButton = document.querySelector("#refresh");
 
-button.addEventListener("click", getUserList);
+listButton.addEventListener("click", getUserList);
+refreshButton.addEventListener("click", refresh);
+
+function refresh() {
+  const id = localStorage.getItem("id");
+  const refreshToken = localStorage.getItem("refreshToken");
+  console.log(`id: `, id);
+  console.log(`refreshToken: `, refreshToken);
+
+  const req = {
+    id: id,
+    refreshToken: refreshToken,
+  };
+
+  fetch("/auth/v1/refresh-token", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(req),
+  })
+    .then((res) => res.json())
+    .then((res) => {
+      if (res.success) {
+        alert(`토큰 갱신 성공`);
+        console.log(`/auth/v1/refresh-token success ${JSON.stringify(res)}`);
+        localStorage.setItem("id", res.id);
+        localStorage.setItem("accessToken", res.accessToken);
+        localStorage.setItem("refreshToken", res.refreshToken);
+        localStorage.setItem("oauth_accessToken", res.oauth_accessToken);
+        localStorage.setItem("oauth_refreshToken", res.oauth_refreshToken);
+      } else {
+        alert(`토큰 갱신 에러 : ${res.msg}`);
+      }
+    })
+    .catch((err) => {
+      console.error(new Error("목록 받아오는 중 에러 발생"));
+    });
+}
 
 function getUserList() {
+  const id = localStorage.getItem("id");
   const accessToken = localStorage.getItem("accessToken");
   const refreshToken = localStorage.getItem("refreshToken");
-  console.log(accessToken);
-  console.log(refreshToken);
+
+  console.log(`id: `, id);
+  console.log(`accessToken: `, accessToken);
+  console.log(`refreshToken: `, refreshToken);
 
   fetch("/users/v1/list", {
     method: "GET",

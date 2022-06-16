@@ -120,14 +120,6 @@ async function loginToKaKao(authorizationCode, provider) {
     console.log(`accessToken : `, body.access_token);
     console.log(`refreshToken : `, body.refresh_token);
 
-    // 테스트.. access token 까보기
-    try {
-        const payload = jwt.verify(body.access_token, "test_secret_key")
-        console.log("Oauth 토큰 verify", payload);
-    } catch (err) {
-        console.log("토큰 인증 에러", err);
-    }
-
     // 사용자 정보 가져오기
     const infoResponse = await request("https://kapi.kakao.com/v2/user/me", {
         method: "GET",

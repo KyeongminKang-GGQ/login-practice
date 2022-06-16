@@ -8,6 +8,19 @@ const OAuthStorage = require("./OAuthStorage");
 const logoutTokens = [];
 
 class UserStorage {
+  static async #removeTokenById(id) {
+    return new Promise((resolve, reject) => {
+      const query = "UPDATE users SET refreshToken = NULL WHERE id = ?";
+      db.query(query, [id], (err) => {
+        if (err) reject(`${err}`);
+        else {
+          this.#getUsers();
+          resolve({ success: true });
+        }
+      });
+    });
+  }
+
   /**
    * 전체 User 조회
    * @returns 
@@ -74,15 +87,14 @@ class UserStorage {
     });
   }
 
-
   /**
    * 회원 데이터베이스 삭제
    * @returns 
    */
-  static deleteAll() {
+  static delete(id) {
     return new Promise((resolve, reject) => {
-      const query = "TRUNCATE users";
-      db.query(query, (err, data) => {
+      const query = "DELETE FROM users WHERE id = ?";
+      db.query(query, [id], (err, data) => {
         if (err) reject(`${err}`);
         else resolve({ success: true });
       });
@@ -212,19 +224,6 @@ class UserStorage {
     await this.saveRefreshToken(id, refreshToken);
 
     return { accessToken: accessToken, refreshToken: refreshToken };
-  }
-
-  static async #removeTokenById(id) {
-    return new Promise((resolve, reject) => {
-      const query = "UPDATE users SET refreshToken = NULL WHERE id = ?";
-      db.query(query, [id], (err) => {
-        if (err) reject(`${err}`);
-        else {
-          this.#getUsers();
-          resolve({ success: true });
-        }
-      });
-    });
   }
 
   static async removeToken(id, accessToken) {
