@@ -8,6 +8,10 @@ const OAuthStorage = require("./OAuthStorage");
 const logoutTokens = [];
 
 class UserStorage {
+  /**
+   * 전체 User 조회
+   * @returns 
+   */
   static #getUsers() {
     return new Promise((resolve, reject) => {
       const query = "SELECT * FROM users";
@@ -21,26 +25,11 @@ class UserStorage {
     });
   }
 
-  static getUserInfoById(id) {
-    return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM users WHERE id = ?";
-      db.query(query, [id], (err, data) => {
-        if (err) reject(`${err}`);
-        else resolve(data[0]);
-      });
-    });
-  }
-
-  static getUserInfoByEmail(email) {
-    return new Promise((resolve, reject) => {
-      const query = "SELECT * FROM users WHERE email = ?";
-      db.query(query, [email], (err, data) => {
-        if (err) reject(`${err}`);
-        else resolve(data[0]);
-      });
-    });
-  }
-
+  /**
+   * Email 로 가입 정보 저장 (Email 가입)
+   * @param {*} userInfo 
+   * @returns 
+   */
   static async #saveByEmail(userInfo) {
     console.log(`saveByEmail: `, userInfo);
     const users = await this.getUserInfoByEmail(userInfo.email);
@@ -63,6 +52,11 @@ class UserStorage {
     });
   }
 
+  /**
+   * ID로 가입 정보 저장 (OAuth 가입)
+   * @param {*} userInfo 
+   * @returns 
+   */
   static async #saveById(userInfo) {
     console.log(`saveById: `, userInfo);
     const users = await this.getUserInfoById(userInfo.id);
@@ -80,6 +74,56 @@ class UserStorage {
     });
   }
 
+
+  /**
+   * 회원 데이터베이스 삭제
+   * @returns 
+   */
+  static deleteAll() {
+    return new Promise((resolve, reject) => {
+      const query = "TRUNCATE users";
+      db.query(query, (err, data) => {
+        if (err) reject(`${err}`);
+        else resolve({ success: true });
+      });
+    });
+  }
+
+  /**
+   * ID로 User 정보 조회 (OAuth 연동의 경우 사용)
+   * @param {} id 
+   * @returns 
+   */
+  static getUserInfoById(id) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM users WHERE id = ?";
+      db.query(query, [id], (err, data) => {
+        if (err) reject(`${err}`);
+        else resolve(data[0]);
+      });
+    });
+  }
+
+  /**
+   * Email로 User 정보 조회 (Email 가입의 경우 사용)
+   * @param {} email 
+   * @returns 
+   */
+  static getUserInfoByEmail(email) {
+    return new Promise((resolve, reject) => {
+      const query = "SELECT * FROM users WHERE email = ?";
+      db.query(query, [email], (err, data) => {
+        if (err) reject(`${err}`);
+        else resolve(data[0]);
+      });
+    });
+  }
+
+  /**
+   * 회원 가입
+   * @param {*} userInfo 
+   * @returns 
+   */
   static async save(userInfo) {
     if (userInfo.id != undefined) {
       await this.#saveById(userInfo);
@@ -97,6 +141,12 @@ class UserStorage {
     }
   }
 
+  /**
+   * 로그인 시 AccessToken, RefreshToken 발급 후 DB 저장
+   * @param {*} id 
+   * @param {*} refreshToken 
+   * @returns 
+   */
   static async saveRefreshToken(id, refreshToken) {
     const users = await this.getUserInfoById(id);
     if (users == undefined) throw "존재하지 않는 유저입니다";
@@ -146,7 +196,7 @@ class UserStorage {
     };
 
     const accessToken = jwt.sign(payload, process.env.SECRET_KEY, {
-      expiresIn: "15m",
+      expiresIn: "5m",
       audience: user.name,
       subject: user.id,
       issuer: "GGQ",

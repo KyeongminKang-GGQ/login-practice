@@ -36,6 +36,10 @@ function getUserList() {
         }
       } else {
         alert(`토큰 인증 에러 : ${res.msg}`);
+        localStorage.removeItem("id");
+        localStorage.removeItem("accessToken");
+        localStorage.removeItem("refreshToken");
+        location.href = "/login";
       }
     })
     .catch((err) => {

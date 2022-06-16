@@ -14,6 +14,7 @@ router.get("/register", homeCtrl.output.register);
 router.post("/auth/v1/login", homeCtrl.process.login);
 router.post("/auth/v1/register", homeCtrl.process.register);
 router.post("/auth/v1/logout", homeCtrl.process.logout);
+router.post("/auth/v1/delete")
 
 router.get("/main", homeCtrl.output.main);
 router.get("/users/v1/list", homeCtrl.process.userList);

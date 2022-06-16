@@ -28,7 +28,7 @@ function login() {
         localStorage.setItem("refreshToken", res.refreshToken);
         location.href = "/main";
       } else {
-        console.log(`auth/v1/login fail`);
+        console.log(`auth/v1/login fail`, res);
         alert(res.msg);
       }
     })
