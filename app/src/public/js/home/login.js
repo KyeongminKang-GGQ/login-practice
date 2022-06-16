@@ -23,6 +23,7 @@ function login() {
         .then((res) => {
             if (res.success) {
                 console.log(`auth/v1/login success ${JSON.stringify(res)}`);
+                localStorage.setItem("id", res.id);
                 localStorage.setItem("accessToken", res.accessToken);
                 localStorage.setItem("refreshToken", res.refreshToken);
                 location.href = "/main";

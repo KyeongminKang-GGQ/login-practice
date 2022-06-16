@@ -22,6 +22,15 @@ const output = {
 }
 
 const process = {
+    logout: async (req, res) => {
+        // 로그아웃 토큰 저장
+        const id = req.body.id;
+        const accessToken = req.body.accessToken;
+
+        const response = await UserStorage.removeToken(id, accessToken);
+
+        return res.json(response);
+    },
     login: async (req, res) => {
         const user = new User(req.body);
 

@@ -4,6 +4,9 @@ const jwt = require(`jsonwebtoken`);
 const db = require("../config/db");
 const OAuthStorage = require("./OAuthStorage");
 
+// For Test >> TODO: REDIS
+const logoutTokens = [];
+
 class UserStorage {
     static #getUsers() {
         return new Promise((resolve, reject) => {
@@ -97,12 +100,12 @@ class UserStorage {
 
             const { accessToken, refreshToken } = await this.issueToken(userInfo.id);
 
-            return { success: true, accessToken: accessToken, refreshToken: refreshToken };
+            return { success: true, id: userInfo.id, accessToken: accessToken, refreshToken: refreshToken };
         } else {
             return await this.#saveByEmail(userInfo);
         }
     }
-    
+
 
     static async saveRefreshToken(id, refreshToken) {
         const users = await this.getUserInfoById(id);
@@ -129,6 +132,12 @@ class UserStorage {
         try {
             const payload = jwt.verify(accessToken, process.env.SECRET_KEY);
             console.log('토큰 인증 성공', payload);
+
+            // 로그아웃 확인
+            if (logoutTokens.includes(accessToken)) {
+                return { success: false, msg: '이미 로그아웃 된 token입니다.' };
+            }
+
             const response = await this.#getUsers();
             return { success: true, response: response };
         } catch (err) {
@@ -145,7 +154,7 @@ class UserStorage {
         console.log(user);
 
         const payload = {
-            id: user.id, 
+            id: user.id,
             email: user.email,
             name: user.name
         }
@@ -175,6 +184,38 @@ class UserStorage {
         await this.saveRefreshToken(id, refreshToken);
 
         return { accessToken: accessToken, refreshToken: refreshToken };
+    }
+
+    static async #removeTokenById(id) {
+        return new Promise((resolve, reject) => {
+            const query = "UPDATE users SET refreshToken = NULL WHERE id = ?";
+            db.query(
+                query,
+                [id],
+                (err) => {
+                    if (err) reject(`${err}`);
+                    else {
+                        this.#getUsers();
+                        resolve({ success: true });
+                    }
+                }
+            );
+        });
+    }
+
+    static async removeToken(id, accessToken) {
+        console.log(`removeToken: ${id}`);
+
+        const user = await this.getUserInfoById(id);
+
+        if (user != undefined) {
+            await this.#removeTokenById(id);
+            // 로그아웃 토큰 저장
+            logoutTokens.push(accessToken);
+            console.log(`logoutTokens: `, logoutTokens);
+        }
+
+        return { success: true, msg: "로그아웃 > 토큰 삭제" };
     }
 }
 

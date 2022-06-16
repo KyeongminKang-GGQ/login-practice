@@ -18,7 +18,7 @@ class User {
 
             if (email) {
                 if (email === client.email && password === client.password) {
-                    return { success: true, accessToken: accessToken, refreshToken: refreshToken };
+                    return { success: true, id: id, accessToken: accessToken, refreshToken: refreshToken };
                 }
                 return { success: false, msg: "비밀번호가 틀렸습니다" };
             }
