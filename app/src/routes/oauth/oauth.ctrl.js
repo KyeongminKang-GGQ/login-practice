@@ -53,10 +53,9 @@ async function loginToGoogle(authorizationCode, provider) {
         method: "POST",
         data: {
             grant_type: "authorization_code",
-            client_id:
-                "61660663640-3mtk3ple6f9dv2tuohq7fj5imm6vfs00.apps.googleusercontent.com",
-            redirect_uri: "http://localhost:3000/google/test",
-            client_secret: "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",
+            client_id: process.env.GOOGLE_CLIENT_ID,
+            redirect_uri: process.env.GOOGLE_REDIRECT_URI,
+            client_secret: process.env.GOOGLE_CLIENT_SECRET_KEY,
             code: authorizationCode,
         },
         headers: {
@@ -104,8 +103,8 @@ async function loginToKaKao(authorizationCode, provider) {
         method: "POST",
         data: {
             grant_type: "authorization_code",
-            client_id: "c56eab53aa9812c1efe939e48b8d12db",
-            redirect_uri: "http://localhost:3000/kakao/test",
+            client_id: process.env.KAKAO_CLIENT_ID,
+            redirect_uri: process.env.KAKAO_REDIRECT_URI,
             code: authorizationCode,
         },
         headers: {
