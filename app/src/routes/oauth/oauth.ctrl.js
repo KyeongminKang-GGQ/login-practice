@@ -93,13 +93,14 @@ const process = {
             });
         }
 
-        return res.json({
-            success: true,
-        })
+        // Mapping Token 생성
+        const mappingResponse =  await new User(
+            {
+                id: kakaoInfo.id
+            }
+        ).oauthLogin();
 
-        //location.href = "/oauth/register";
-        //res.redirect(`/oauth/register?id=${kakaoInfo.id}&img=${kakaoInfo.properties.profile_image}`);
-        //res.status(200).send(`<div><p>이름 : ${kakaoInfo.properties.nickname}</p><img src="${kakaoInfo.properties.profile_image}"></img><p>${kakaoInfo}</p></div>`);
+        return res.json(mappingResponse);
     }
 }
 

@@ -24,8 +24,11 @@ fetch(`${url.origin}/auth/v1/oauth/login`, {
     .then((res) => {
         console.log(res);
         if (res.success) {
-            console.log(`auth/v1/oauth/login success`);
-            
+            console.log(`auth/v1/oauth/login success`, res);
+            localStorage.setItem("id", res.id);
+            localStorage.setItem("accessToken", res.accessToken);
+            localStorage.setItem("refreshToken", res.refreshToken);
+            location.href = "/main";
         } else {
             console.log(`auth/v1/oauth/login fail ${res.returnCode}`);
             console.log(res.info);

@@ -7,12 +7,25 @@ class User {
         this.body = body;
     }
 
+    async oauthLogin() {
+        console.log(`oauthLogin request : ${JSON.stringify(this.body)}`);
+        try {
+            const { accessToken, refreshToken } = await UserStorage.issueToken(this.body.id);
+
+            console.log("oauthLogin request finish");
+
+            return { success: true, id: this.body.id, accessToken: accessToken, refreshToken: refreshToken };
+        } catch (err) {
+            return { success: false, msg: err };
+        }
+    }
+
     async login() {
         const client = this.body;
         console.log(`login request : ${JSON.stringify(client)}`);
         try {
             const { id, email, password } = await UserStorage.getUserInfoByEmail(client.email);
-            console.log(`find user : ${email}, ${password}`);
+            console.log(`find user : ${email}, ${password}`); 
 
             const { accessToken, refreshToken } = await UserStorage.issueToken(id);
 

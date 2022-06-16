@@ -115,7 +115,7 @@ class UserStorage {
             const query = "UPDATE users SET refreshToken = ? WHERE id = ?";
             db.query(
                 query,
-                [refreshToken, id],
+                [refreshToken, `${id}`],
                 (err) => {
                     if (err) reject(`${err}`);
                     else {
