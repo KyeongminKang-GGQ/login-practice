@@ -20,7 +20,20 @@ function getUserList() {
         .then((res) => res.json())
         .then((res) => {
             if (res.success) {
-                alert(`토큰 인증 성공 : ${JSON.stringify(res.response)}`);
+                alert(`토큰 인증 성공`);
+                const response = res.response;
+                for (let i in response) {
+                    let tr = document.createElement('tr');
+                    let value = response[i];
+                    let keys = Object.getOwnPropertyNames(value);
+
+                    for (let j = 0; j < keys.length; j++) {
+                        let td = document.createElement('td');
+                        td.innerHTML = value[keys[j]] || 'NULL';
+                        tr.appendChild(td);
+                    }
+                    document.querySelector("tbody").appendChild(tr);
+                }
             } else {
                 alert(`토큰 인증 에러 : ${res.msg}`);
             }

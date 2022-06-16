@@ -5,22 +5,6 @@ const db = require("../config/db");
 const OAuthStorage = require("./OAuthStorage");
 
 class UserStorage {
-    static #getUserEmail() {
-        return new Promise((resolve, reject) => {
-            const query = "SELECT email FROM users";
-            db.query(
-                query,
-                (err, data) => {
-                    if (err) reject(err);
-                    else {
-                        console.log(data);
-                        resolve(data);
-                    }
-                }
-            );
-        });
-    }
-
     static #getUsers() {
         return new Promise((resolve, reject) => {
             const query = "SELECT * FROM users";
@@ -145,7 +129,7 @@ class UserStorage {
         try {
             const payload = jwt.verify(accessToken, process.env.SECRET_KEY);
             console.log('토큰 인증 성공', payload);
-            const response = await this.#getUserEmail();
+            const response = await this.#getUsers();
             return { success: true, response: response };
         } catch (err) {
             console.log('토큰 인증 에러', err);
