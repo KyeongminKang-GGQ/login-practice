@@ -21,7 +21,7 @@ const output = {
     },
 };
 
-const process = {
+const callback = {
     delete: async (req, res) => {
         // 모든 회원 정보 삭제
 
@@ -78,5 +78,5 @@ const process = {
 
 module.exports = {
     output,
-    process,
+    callback,
 };
