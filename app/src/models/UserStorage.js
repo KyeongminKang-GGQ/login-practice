@@ -2,6 +2,7 @@
 
 const jwt = require(`jsonwebtoken`);
 const db = require("../config/db");
+const OAuthStorage = require("./OAuthStorage");
 
 class UserStorage {
     static #getUserEmail() {
@@ -64,7 +65,8 @@ class UserStorage {
         });
     }
 
-    static async save(userInfo) {
+    static async #saveByEmail(userInfo) {
+        console.log(`saveByEmail: `, userInfo);
         const users = await this.getUserInfoByEmail(userInfo.email);
         if (users != undefined) throw "이미 존재하는 이메일입니다"
 
@@ -83,6 +85,40 @@ class UserStorage {
             );
         });
     }
+
+    static async #saveById(userInfo) {
+        console.log(`saveById: `, userInfo);
+        const users = await this.getUserInfoById(userInfo.id);
+        if (users != undefined) throw "이미 존재하는 id입니다"
+
+        return new Promise((resolve, reject) => {
+            const query = "INSERT INTO users(id, name) VALUES(?, ?)";
+            db.query(
+                query,
+                [userInfo.id, userInfo.name],
+                (err) => {
+                    if (err) reject(`${err}`);
+                    else {
+                        this.#getUsers();
+                        resolve({ success: true });
+                    }
+                }
+            );
+        });
+    }
+
+    static async save(userInfo) {
+        if (userInfo.id != undefined) {
+            await this.#saveById(userInfo);
+
+            const { accessToken, refreshToken } = await this.issueToken(userInfo.id);
+
+            return { success: true, accessToken: accessToken, refreshToken: refreshToken };
+        } else {
+            return await this.#saveByEmail(userInfo);
+        }
+    }
+    
 
     static async saveRefreshToken(id, refreshToken) {
         const users = await this.getUserInfoById(id);

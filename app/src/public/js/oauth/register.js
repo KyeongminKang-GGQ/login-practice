@@ -5,27 +5,32 @@ const userName = document.querySelector("#name"),
 
 signUpBtn.addEventListener("click", register);
 
+const url = new URL(window.location.href);
+
 console.log("======register======");
 
-const url = new URL(window.location.href);
-const urlParams = url.searchParams;
-const id = urlParams.get('id');
-
-console.log(id);
-console.log(urlParams.get('img'));
+const id = localStorage.getItem("id");
+const imageUrl = localStorage.getItem("profile_image");
+const provider = localStorage.getItem("provider");
 
 var image = new Image();
-image.src = urlParams.get('img');
+image.src = imageUrl;
+
+const newDIV = document.createElement('div');
+newDIV.innerHTML = `ID : ${id}<p>OAuth Provider: ${provider}<p> Profile Image: <p>`;
+document.getElementById('container').appendChild(newDIV);
 document.getElementById('container').appendChild(image);
 
 function register() {
     if (!userName.value) return alert("이름을 입력해주십시오.")
 
     const req = {
-        name: userName.value
+        id: id,
+        provider: provider,
+        name: userName.value,
     };
 
-    fetch("auth/v1/oauth/register", {
+    fetch(`${url.origin}/auth/v1/oauth/register`, {
         method: "POST",
         headers: {
             "Content-Type": "application/json"
@@ -35,10 +40,12 @@ function register() {
         .then((res) => res.json())
         .then((res) => {
             if (res.success) {
-                console.log(`auth/v1/oauth/register success`);
+                console.log(`auth/v1/oauth/register success ${JSON.stringify(res)}`);
+                localStorage.setItem("accessToken", res.accessToken);
+                localStorage.setItem("refreshToken", res.refreshToken);
                 location.href = "/main";
             } else {
-                console.log(`auth/v1/oauth/register fail`);
+                console.log(`auth/v1/oauth/register fail`, res);
                 alert(res.msg);
             }
         })

@@ -34,6 +34,8 @@ const process = {
 
         const response = await user.register();
 
+        console.log(`email register : `, response);
+
         return res.json(response);
     },
     userList: async (req, res) => {

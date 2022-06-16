@@ -5,27 +5,33 @@ const OAuthStorage = require(`../../models/OAuthStorage`);
 const jwt = require("jsonwebtoken");
 const request = require("async-request");
 const OAuth = require("../../models/OAuth");
+const User = require(`../../models/User`);
 
 const output = {
     register: (req, res) => {
         res.render("oauth/register");
+    },
+    kakaoCallback: (req, res) => {
+        res.render("oauth/kakao");
     }
 }
 
 const process = {
     register: async (req, res) => {
-        
+        console.log(`oauth register: ${JSON.stringify(req.body)}`);
+
+        const user = new User(req.body);
+
+        const response = await user.register();
+
+        console.log(`oauth register : `, response);
+
+        return res.json(response);
     },
     kakaoLogin: async (req, res) => {
-        const query = req.query;
+        console.log(`kakaoLogin: ${JSON.stringify(req.body)}`);
 
-        console.log(`query: ${JSON.stringify(query)}`);
-
-        if (!Object.prototype.hasOwnProperty.call(query, "code")) {
-            return res.status(400).send("invalid_code");
-        }
-
-        const authorizationCode = query.code;
+        const authorizationCode = req.body.authorizationCode;
         console.log(`authorizationCode: ${authorizationCode}`);
 
         // Access Token 요청
@@ -64,18 +70,35 @@ const process = {
 
         const user = await UserStorage.getUserInfoById(kakaoInfo.id);
 
-        const oauth = new OAuth(
-            {
-                id: kakaoInfo.id,
-                refreshToken: body.refresh_token,
-                accessToken: body.access_token,
-                provider: 'KaKao',
-            }
-        );
-        await oauth.save();
+        if (user == undefined) {
+            const oauth = new OAuth(
+                {
+                    id: kakaoInfo.id,
+                    refreshToken: body.refresh_token,
+                    accessToken: body.access_token,
+                    provider: 'KaKao',
+                }
+            );
+            await oauth.save();
+
+            return res.json({
+                success: false,
+                returnCode: 'AUTH0000',
+                returnMessage: '회원이 아닙니다. 가입하세요.',
+                info: {
+                    provider: 'KaKao',
+                    id: kakaoInfo.id,
+                    profile_image: kakaoInfo.properties.profile_image
+                },
+            });
+        }
+
+        return res.json({
+            success: true,
+        })
 
         //location.href = "/oauth/register";
-        res.redirect(`/oauth/register?id=${kakaoInfo.id}&img=${kakaoInfo.properties.profile_image}`);
+        //res.redirect(`/oauth/register?id=${kakaoInfo.id}&img=${kakaoInfo.properties.profile_image}`);
         //res.status(200).send(`<div><p>이름 : ${kakaoInfo.properties.nickname}</p><img src="${kakaoInfo.properties.profile_image}"></img><p>${kakaoInfo}</p></div>`);
     }
 }

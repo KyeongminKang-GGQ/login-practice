@@ -10,7 +10,7 @@ const dotenv = require("dotenv");
 dotenv.config();
 
 // 라우팅
-const home = require(`${__dirname}/src/routes/home`);
+const router = require(`${__dirname}/src/routes`);
 
 // 앱 세팅
 app.set("views", `${__dirname}/src/views`);
@@ -27,7 +27,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // 미들웨어 등록
-app.use("/", home);
+app.use("/", router);
 
 // 서버 실행
 module.exports = app;
