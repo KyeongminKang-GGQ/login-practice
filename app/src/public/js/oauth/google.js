@@ -1,6 +1,6 @@
 "use strict";
 
-console.log("======kakao======");
+console.log("======google======");
 
 const url = new URL(window.location.href);
 const urlParams = url.searchParams;
@@ -11,7 +11,7 @@ console.log("authorizationCode : ", authorizationCode);
 
 const req = {
   authorizationCode: authorizationCode,
-  provider: "KaKao",
+  provider: "Google",
 };
 
 fetch(`${url.origin}/auth/v1/oauth/login`, {

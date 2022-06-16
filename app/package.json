@@ -5,7 +5,8 @@
   "main": "app.js",
   "scripts": {
     "start": "nodemon ./bin/www.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "pretty": "prettier --write \"./**/*.{js,jsx,json}\""
   },
   "bin": {
     "login-practice": "www.js"
@@ -21,5 +22,8 @@
     "express": "^4.18.1",
     "jsonwebtoken": "^8.5.1",
     "mysql": "^2.18.1"
+  },
+  "devDependencies": {
+    "prettier": "^2.7.1"
   }
 }

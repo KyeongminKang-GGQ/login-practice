@@ -21,9 +21,9 @@ router.get("/users/v1/list", homeCtrl.process.userList);
 // OAuth 컨트롤 라우터 생성
 router.get("/oauth/register", oAuthCtrl.output.register);
 router.get("/kakao/test", oAuthCtrl.output.kakaoCallback);
+router.get("/google/test", oAuthCtrl.output.googleCallback);
 
 router.post("/auth/v1/oauth/register", oAuthCtrl.process.register);
-router.post("/auth/v1/oauth/login", oAuthCtrl.process.kakaoLogin);
-
+router.post("/auth/v1/oauth/login", oAuthCtrl.process.login);
 
 module.exports = router;
