@@ -35,17 +35,23 @@ const callback = {
         console.log(`oauth login: ${JSON.stringify(req.body)}`);
 
         const authorizationCode = req.body.authorizationCode;
+        const clientId = req.body.clientId;
+        const redirectUri = req.body.redirectUri;    
+        const clientSecret = req.body.clientSecret;    
         console.log(`authorizationCode: ${authorizationCode}`);
+        console.log(`clientId: ${clientId}`);
+        console.log(`redirectUri: ${redirectUri}`);
+        console.log(`clientSecret: ${clientSecret}`);
 
         if (req.body.provider == "KaKao") {
-            return res.json(await loginToKaKao(authorizationCode, req.body.provider));
+            return res.json(await loginToKaKao(clientId, redirectUri, authorizationCode, req.body.provider));
         }
 
-        return res.json(await loginToGoogle(authorizationCode, req.body.provider));
+        return res.json(await loginToGoogle(clientId, redirectUri, clientSecret, authorizationCode, req.body.provider));
     },
 };
 
-async function loginToGoogle(authorizationCode, provider) {
+async function loginToGoogle(clientId, redirectUri, clientSecret, authorizationCode, provider) {
     console.log("loginToGoogle", authorizationCode);
 
     // Access Token 요청
@@ -53,9 +59,9 @@ async function loginToGoogle(authorizationCode, provider) {
         method: "POST",
         data: {
             grant_type: "authorization_code",
-            client_id: process.env.GOOGLE_CLIENT_ID,
-            redirect_uri: process.env.GOOGLE_REDIRECT_URI,
-            client_secret: process.env.GOOGLE_CLIENT_SECRET_KEY,
+            client_id: clientId,
+            redirect_uri: redirectUri,
+            client_secret: clientSecret,
             code: authorizationCode,
         },
         headers: {
@@ -73,6 +79,15 @@ async function loginToGoogle(authorizationCode, provider) {
     console.log(`accessToken : `, accessToken);
     console.log(`refreshToken : `, refreshToken);
 
+    if (accessToken == undefined) {
+        return {
+            success: false,
+            returnCode: "AUTH0001",
+            returnMessage: body.error_description,
+            info: body
+        };
+    }
+
     const infoResponse = await request(
         `https://www.googleapis.com/oauth2/v2/userinfo?access_token=${accessToken}`,
         {
@@ -86,16 +101,24 @@ async function loginToGoogle(authorizationCode, provider) {
     const googleInfo = JSON.parse(infoResponse.body);
     console.log(googleInfo);
 
+    if (googleInfo.id == undefined) {
+        return {
+            success: false,
+            returnCode: "AUTH0001",
+            returnMessage: googleInfo.error.message,
+            info: googleInfo
+        };
+    }
+
     return await getUserInfoIfExists(
         googleInfo.id,
         accessToken,
         refreshToken,
-        googleInfo.picture,
         provider
     );
 }
 
-async function loginToKaKao(authorizationCode, provider) {
+async function loginToKaKao(clientId, redirectUri, authorizationCode, provider) {
     console.log("loginToKaKao", authorizationCode);
 
     // Access Token 요청
@@ -103,8 +126,8 @@ async function loginToKaKao(authorizationCode, provider) {
         method: "POST",
         data: {
             grant_type: "authorization_code",
-            client_id: process.env.KAKAO_CLIENT_ID,
-            redirect_uri: process.env.KAKAO_REDIRECT_URI,
+            client_id: clientId,
+            redirect_uri: redirectUri,
             code: authorizationCode,
         },
         headers: {
@@ -118,6 +141,16 @@ async function loginToKaKao(authorizationCode, provider) {
 
     console.log(body);
     console.log(`accessToken : `, body.access_token);
+
+    if (body.access_token == undefined) {
+        return {
+            success: false,
+            returnCode: "AUTH0001",
+            returnMessage: body.error_description,
+            info: body
+        };
+    }
+
     console.log(`refreshToken : `, body.refresh_token);
 
     // 사용자 정보 가져오기
@@ -132,11 +165,19 @@ async function loginToKaKao(authorizationCode, provider) {
     const kakaoInfo = JSON.parse(infoResponse.body);
     console.log(kakaoInfo);
 
+    if (kakaoInfo.id == undefined) {
+        return {
+            success: false,
+            returnCode: "AUTH0001",
+            returnMessage: kakaoInfo.msg,
+            info: kakaoInfo
+        };
+    }
+
     return await getUserInfoIfExists(
         kakaoInfo.id,
         body.access_token,
         body.refresh_token,
-        kakaoInfo.properties.profile_image,
         provider
     );
 }
@@ -145,7 +186,6 @@ async function getUserInfoIfExists(
     id,
     accessToken,
     refreshToken,
-    imageUrl,
     provider
 ) {
     const user = await UserStorage.getUserInfoById(id);
@@ -166,7 +206,6 @@ async function getUserInfoIfExists(
             info: {
                 provider: provider,
                 id: id,
-                profile_image: imageUrl,
                 refreshToken: refreshToken,
                 accessToken: accessToken,
             },
